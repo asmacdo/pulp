@@ -101,20 +101,6 @@ def update_database(definitions, error_on_missing_definitions=False, drop_indice
                 error_defs.append(type_def)
                 continue
 
-        try:
-            _update_unit_key(type_def)
-        except Exception:
-            _logger.exception('Exception updating unit key for type [%s]' % type_def.id)
-            error_defs.append(type_def)
-            continue
-
-        try:
-            _update_search_indexes(type_def)
-        except Exception:
-            _logger.exception('Exception updating search indexes for type [%s]' % type_def.id)
-            error_defs.append(type_def)
-            continue
-
     if len(error_defs) > 0:
         raise UpdateFailed(error_defs)
 
@@ -271,48 +257,6 @@ def _create_or_update_type(type_def):
         content_type._id = existing_type['_id']
     # XXX this still causes a potential race condition when 2 users are updating the same type
     content_type_collection.save(content_type)
-
-
-def _update_indexes(type_def, unique):
-
-    collection_name = unit_collection_name(type_def.id)
-    collection = connection.get_collection(collection_name, create=False)
-
-    if unique:
-        index_list = [type_def.unit_key]  # treat the key as a compound key
-    else:
-        index_list = type_def.search_indexes
-
-    if index_list is None:
-        return
-
-    for index in index_list:
-
-        if isinstance(index, (list, tuple)):
-            msg = 'Ensuring index [%s] (unique: %s) on type definition [%s]'
-            msg = msg % (', '.join(index), unique, type_def.id)
-            _logger.debug(msg)
-            mongo_index = _create_index_keypair(index)
-        else:
-            msg = 'Ensuring index [%s] (unique: %s) on type definition [%s]'
-            msg = msg % (index, unique, type_def.id)
-            _logger.debug(msg)
-            mongo_index = index
-
-        index_name = collection.ensure_index(mongo_index, unique=unique)
-
-        if index_name is not None:
-            _logger.debug('Index [%s] created on type definition [%s]' % (index_name, type_def.id))
-        else:
-            _logger.debug('Index already existed on type definition [%s]' % type_def.id)
-
-
-def _update_unit_key(type_def):
-    _update_indexes(type_def, True)
-
-
-def _update_search_indexes(type_def):
-    _update_indexes(type_def, False)
 
 
 def _drop_indexes(type_def):
