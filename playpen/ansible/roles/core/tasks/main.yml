@@ -1,7 +1,8 @@
 ---
 - name: Install basic packages
-  dnf: name={{ item }} state=present
+  dnf: name={{ item }} state=latest
   with_items:
+      - vim-minimal
       - bash-completion
       - fedora-easy-karma
       - htop
