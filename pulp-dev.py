@@ -107,17 +107,6 @@ if sys.version_info >= (2, 6):
         ('streamer/etc/httpd/conf.d/pulp_streamer.conf', '/etc/httpd/conf.d/pulp_streamer.conf'),
         ('streamer/etc/pulp/streamer.conf', '/etc/pulp/streamer.conf'),
 
-        # Pulp Nodes
-        ('/var/lib/pulp/content', '/var/www/pulp/nodes/content'),
-        ('/var/lib/pulp/nodes/published/http', '/var/www/pulp/nodes/http'),
-        ('/var/lib/pulp/nodes/published/https', '/var/www/pulp/nodes/https'),
-        ('nodes/parent/etc/httpd/conf.d/pulp_nodes.conf', '/etc/httpd/conf.d/pulp_nodes.conf'),
-        ('nodes/child/etc/pulp/server/plugins.conf.d/nodes/importer/http.conf',
-         '/etc/pulp/server/plugins.conf.d/nodes/importer/http.conf'),
-        ('nodes/parent/etc/pulp/server/plugins.conf.d/nodes/distributor/http.conf',
-         '/etc/pulp/server/plugins.conf.d/nodes/distributor/http.conf'),
-        ('nodes/child/pulp_node/importers/types/nodes.json', DIR_PLUGINS + '/types/node.json'),
-
         # Static Content
         ('/etc/pki/pulp/rsa_pub.key', '/var/lib/pulp/static/rsa_pub.key'),
     ])
