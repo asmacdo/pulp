@@ -232,6 +232,18 @@ class Importer(ContentAdaptor):
         default_related_name = 'importers'
 
 
+class ExampleDetailImporter(Importer):
+    # I didn't see this variable being used?
+    # TODO(asmacdo)
+    # type = 'examale-detail'
+    pass
+
+    class Meta(Importer.Meta):
+        # It is necessary to override the parent's `unique_together` field because this model is
+        # not aware of the fields referenced, but the parent is.
+        unique_together = None
+
+
 class Publisher(ContentAdaptor):
     """
     A content publisher.
