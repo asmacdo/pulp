@@ -41,3 +41,7 @@ class RepositoryViewSet(NamedModelViewSet):
         page = paginator.paginate_queryset(repo.content, request)
         serializer = ContentSerializer(page, many=True, context={'request': request})
         return paginator.get_paginated_response(serializer.data)
+
+
+class ImporterViewSet(NamedModelViewSet):
+    lookup_field = 'name'
