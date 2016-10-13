@@ -11,6 +11,7 @@ class NamedModelViewSet(viewsets.ModelViewSet):
     "Normal" Django Models and Master/Detail models are supported by the ``register_with`` method.
     """
     endpoint_name = None
+    nested_parent = None
 
     @classmethod
     def is_master_viewset(cls):
@@ -48,18 +49,36 @@ class NamedModelViewSet(viewsets.ModelViewSet):
             <master_viewset.endpoint_name>-<detail_viewset.endpoint_name>'
 
         """
+        if cls.is_master_viewset():
+            # If this is a master viewset, it doesn't need to be registered with the API
+            # router (its detail subclasses will be registered instead).
+            return
+
+        pieces = cls.relative_url_pieces()
+        view_name = '-'.join(pieces)
+        if cls.nested_parent:
+            lookup = cls.urlpattern_param(cls.nested_parent_lookup_name)
+            pieces = cls.nested_parent.relative_url_pieces() + (lookup,) + pieces
+
+        urlpattern = '/'.join(pieces)
+        router.register(urlpattern, cls, view_name)
+
+    @staticmethod
+    def urlpattern_param(lookup_name):
+        return "(?P<{name}>[^/.]+)".format(name=lookup_name)
+
+    @classmethod
+    def relative_url_pieces(cls):
+        """
+        Retrieves the pieces of the relative url for this ViewSet.
+        """
         # if we have a master model, include its endpoint name in endpoint pieces
         # by looking at its ancestry and finding the "master" endpoint name
         if cls.queryset is None:
             # If this viewset has no queryset, we can't begin to introspect its
             # endpoint. It is most likely a superclass to be used by Detail
             # Model ViewSet subclasses.
-            return
-
-        if cls.is_master_viewset():
-            # If this is a master viewset, it doesn't need to be registered with the API
-            # router (its detail subclasses will be registered instead).
-            return
+            return ()
 
         if cls.queryset.model._meta.master_model is not None:
             # Model is a Detail model. Go through its ancestry (via MRO) to find its
@@ -87,11 +106,9 @@ class NamedModelViewSet(viewsets.ModelViewSet):
                        'correctly subclass the Master ViewSet, and do both have endpoint_name '
                        'set to different values?').format(cls.__name__)
                 warnings.warn(msg, RuntimeWarning)
-                return
+                return ()
         else:
             # "Normal" model, can just use endpoint_name directly.
             pieces = (cls.endpoint_name,)
 
-        urlpattern = '/'.join(pieces)
-        view_name = '-'.join(pieces)
-        router.register(urlpattern, cls, view_name)
+        return pieces
