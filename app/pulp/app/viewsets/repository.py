@@ -34,24 +34,25 @@ class RepositoryViewSet(NamedModelViewSet):
     pagination_class = RepositoryPagination
     filter_class = RepositoryFilter
 
-    # @decorators.detail_route()
-    # def content(self, request, name):
-    #     # XXX Not sure if we actually want to put a content view on repos like this, this is
-    #     #     just an example of how you might include a related queryset, and in a paginated way.
-    #     repo = self.get_object()
-    #     paginator = UUIDPagination()
-    #     page = paginator.paginate_queryset(repo.content, request)
-    #     serializer = ContentSerializer(page, many=True, context={'request': request})
-    #     return paginator.get_paginated_response(serializer.data)
+    @decorators.detail_route()
+    def content(self, request, name):
+        # XXX Not sure if we actually want to put a content view on repos like this, this is
+        #     just an example of how you might include a related queryset, and in a paginated way.
+        repo = self.get_object()
+        paginator = UUIDPagination()
+        page = paginator.paginate_queryset(repo.content, request)
+        serializer = ContentSerializer(page, many=True, context={'request': request})
+        return paginator.get_paginated_response(serializer.data)
 
 
 class ImporterViewSet(NamedModelViewSet):
-    queryset = Importer.objects.all()
     endpoint_name = 'importers'
-    # serializer_class = ImporterSerializer
+    serializer_class = ImporterSerializer
 
 
 class ExampleDetailImporterViewSet(ImporterViewSet):
+    nested_parent = 'repositories/(?P<repo_name>[^/]+)/'
+    endpoint_name = 'exampletype'
     lookup_field = 'name'
     queryset = ExampleDetailImporter.objects.all()
     serializer_class = ExampleDetailImporterSerializer

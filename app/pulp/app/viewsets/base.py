@@ -11,6 +11,7 @@ class NamedModelViewSet(viewsets.ModelViewSet):
     "Normal" Django Models and Master/Detail models are supported by the ``register_with`` method.
     """
     endpoint_name = None
+    nested_parent = None
 
     @classmethod
     def is_master_viewset(cls):
@@ -92,6 +93,7 @@ class NamedModelViewSet(viewsets.ModelViewSet):
             # "Normal" model, can just use endpoint_name directly.
             pieces = (cls.endpoint_name,)
 
-        urlpattern = '/'.join(pieces)
+        urlpattern = cls.nested_parent or ''
+        urlpattern = urlpattern + '/'.join(pieces)
         view_name = '-'.join(pieces)
         router.register(urlpattern, cls, view_name)
