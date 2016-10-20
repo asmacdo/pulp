@@ -232,6 +232,13 @@ class Importer(ContentAdaptor):
         default_related_name = 'importers'
 
 
+class ExampleDetailImporter(Importer):
+    type = 'exadetail'
+
+    class Meta(Importer.Meta):
+        unique_together = None
+
+
 class Publisher(ContentAdaptor):
     """
     A content publisher.

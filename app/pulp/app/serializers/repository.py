@@ -1,7 +1,9 @@
 from rest_framework import serializers
+from rest_framework.reverse import reverse
 
 from pulp.app import models
-from pulp.app.serializers import NotesKeyValueRelatedField, ModelSerializer
+from pulp.app.serializers import (base, NotesKeyValueRelatedField, ModelSerializer,
+                                  MasterModelSerializer)
 
 
 class RepositorySerializer(ModelSerializer):
@@ -38,68 +40,35 @@ class RepositorySerializer(ModelSerializer):
                                                 'last_content_added', 'last_content_removed')
 
 
-class RepositoryGroup(ModelSerializer):
-    """
-    Pass for now, are we killing the Repo Group?
-    """
-    pass
+class CustomRelatedField(serializers.HyperlinkedRelatedField):
+    view_name = 'importers-detail',
+    queryset = models.ExampleDetailImporter.objects.all()
+
+    #TODO(asmacdo) repo.name?
+    def get_url(self, obj, view_name, request, format):
+        url_kwargs = {
+            'repo_name': obj.repository,
+            'name': obj.name
+        }
+        return reverse(view_name, kwargs=url_kwargs, request=request, format=format)
+
+    def get_object(self, view_name, view_args, view_kwargs):
+        lookup_kwargs = {
+            'repository__name': view_kwargs['repo_name'],
+            'name': view_kwargs['name']
+        }
+        return self.get_queryset().get(**lookup_kwargs)
 
 
-class ImporterSerializer(ModelSerializer):
-    # _href is normally provided by the base class, but Importers's
-    # "name" lookup field means _href must be explicitly declared.
-    _href = serializers.HyperlinkedIdentityField(
-        view_name='importers-detail',
-        lookup_field='name',
-    )
+class ImporterSerializer(MasterModelSerializer):
+    _href = CustomRelatedField()
     name = serializers.CharField(
         help_text='A name for this importer, unique within the associated repository.'
     )
-    last_updated = serializers.DateTimeField(
-        help_text='Timestamp of the most recent update of this Importer.',
-        read_only=True
-    )
-    # TODO(asmacdo) I suspect this doesn't need to be here. Or if it does, I just want to show
-    # repository.name
-    repository = serializers.HyperlinkedRelatedField(read_only=True,
-                                                     view_name='repositories-detail')
-    feed_url = serializers.CharField(help_text='The URL of an external content source.')
-    validate = serializers.BooleanField(help_text='Whether to validate imported content.')
-    ssl_ca_certificate = serializers.CharField(
-        help_text='A PEM encoded CA certificate used to validate the server '
-                  'certificate presented by the external source.'
-    )
-    ssl_client_certificate = serializers.CharField(
-        help_text='A PEM encoded client certificate used for authentication.'
-    )
-    ssl_client_key = serializers.CharField(
-        help_text='A PEM encoded private key used for authentication.'
-    )
-    ssl_validation = serializers.BooleanField(
-        help_text='Indicates whether SSL peer validation must be performed.'
-    )
-    proxy_url = serializers.CharField(
-        help_text='The optional proxy URL. Format: scheme://user:password@host:port'
-    )
-    basic_auth_user = serializers.CharField(
-        help_text='The username to be used in HTTP basic authentication when syncing.'
-    )
-    basic_auth_password = serializers.CharField(
-        help_text='The password to be used in HTTP basic authentication when syncing.'
-    )
-    max_download_bandwidth = serializers.IntegerField(
-        help_text='The max amount of bandwidth used per download (Bps).'
-    )
-    max_concurrent_downloads = serializers.IntegerField(
-        help_text='The number of concurrent downloads permitted.'
-    )
-    download_policy = serializers.CharField(
-        help_text='The policy for downloading content.',
-    )
-    last_sync = serializers.DateTimeField(
-        help_text='Timestamp of the most recent sync.',
-        read_only=True
-    )
+
+    class Meta:
+        abstract = True
+        fields = MasterModelSerializer.Meta.fields + ('name',)
 
 
 class PublisherSerializer(ModelSerializer):
@@ -132,3 +101,11 @@ class PublisherSerializer(ModelSerializer):
         help_text='Timestamp of the most publish.',
         read_only=True
     )
+
+
+class ExampleDetailImporterSerializer(ImporterSerializer):
+    _href = base.DetailIdentityField()
+
+    class Meta:
+        model = models.ExampleDetailImporter
+        fields = ImporterSerializer.Meta.fields
