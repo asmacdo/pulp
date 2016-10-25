@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from pulp.app import models
 from pulp.app.serializers import (ModelSerializer, NotesKeyValueRelatedField,
-                                  MasterModelSerializer, RepositoryNestedIdentityField)
+                                  MasterModelSerializer)
 
 
 class RepositorySerializer(ModelSerializer):
@@ -56,16 +56,3 @@ class ImporterSerializer(MasterModelSerializer):
     class Meta:
         abstract = True
         fields = MasterModelSerializer.Meta.fields + ('name',)
-
-
-class ExampleDetailImporterSerializer(ImporterSerializer):
-    """
-    Example of a Detail serializer that also utilizes nested routes.
-    """
-    # Content adapters need to use two kwargs because the name is only unique within a
-    # repository and alone, `Importer.name` is not enough to uniquely identify it.
-    _href = RepositoryNestedIdentityField(view_name='importers-exampletype-detail')
-
-    class Meta:
-        model = models.ExampleDetailImporter
-        fields = ImporterSerializer.Meta.fields
