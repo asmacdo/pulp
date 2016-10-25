@@ -1,11 +1,10 @@
 from django_filters.rest_framework import filters, filterset
 from rest_framework import decorators, pagination
 
-from pulp.app.models import ExampleDetailImporter, Importer, Repository
+from pulp.app.models import Importer, Repository
 from pulp.app.pagination import UUIDPagination
 from pulp.app.serializers import ContentSerializer, RepositorySerializer
 from pulp.app.serializers.repository import ImporterSerializer
-from pulp.app.serializers.repository import ExampleDetailImporterSerializer
 from pulp.app.viewsets import NamedModelViewSet
 from pulp.app.viewsets.custom_filters import CharInFilter
 
@@ -64,12 +63,3 @@ class ImporterViewSet(NamedModelViewSet):
     nested_parent_lookup_name = 'repo_name'
     endpoint_name = 'importers'
     serializer_class = ImporterSerializer
-
-
-class ExampleDetailImporterViewSet(ImporterViewSet):
-    # Because of the master-detail relationship, this means that the base url for example detail
-    # importer will be .../importers/exampletype/
-    endpoint_name = 'exampletype'
-    lookup_field = 'name'
-    queryset = ExampleDetailImporter.objects.all()
-    serializer_class = ExampleDetailImporterSerializer
