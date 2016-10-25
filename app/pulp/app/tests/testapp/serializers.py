@@ -1,9 +1,28 @@
-from pulp.app.serializers import ContentSerializer
+"""
+The plugin should implement a serializer for each of the required models and any others that are not
+abstract. These serializers should choose the matching base class from `pulp.app.serializers`. Be
+sure not to clobber the parent class' field data.
+"""
+from pulp.app.serializers import (ContentSerializer, ImporterSerializer,
+                                  RepositoryNestedIdentityField)
 
-from pulp.app.tests.testapp.models import TestContent
+from pulp.app.tests.testapp.models import TestContent, TestImporter
 
 
 class TestContentSerializer(ContentSerializer):
     class Meta:
         fields = ContentSerializer.Meta.fields + ('name',)
         model = TestContent
+
+
+class TestImporterSerializer(ImporterSerializer):
+    """
+    Example of a Detail serializer that also utilizes nested routes.
+    """
+    # Importers and Publishers have a two field natural key (repository and name). We override
+    # _href in this case so we can have a special IdentityField to build those nested URLs.
+    _href = RepositoryNestedIdentityField(view_name='importers-test-detail')
+
+    class Meta:
+        model = TestImporter
+        fields = ImporterSerializer.Meta.fields
