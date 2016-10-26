@@ -71,8 +71,8 @@ Serializer Notes
   them is recommended for writers of serializers.
 
 * All Serializers representing Pulp Models should subclass
-  :class:`pulp.app.serializers.base.ModelSerializer`, as it provides useful behaviors to handle some
-  of the conventions used when building Pulp Models, such as GenericKeyValueMapping fields.
+  :class:`pulp.app.serializers.base.PulpModelSerializer`, as it provides useful behaviors to handle
+  some of the conventions used when building Pulp Models, such as GenericKeyValueMapping fields.
 
 * Whether serializer fields are explicitly declared on the serializer class or not, the field names
   to expose via the API must be declared by specifying 'fields' in the serializer's ``Meta`` class,
@@ -168,8 +168,9 @@ types, all importable from ``pulp.app.serializers``:
 * ``ConfigKeyValueRelatedField``
 * ``NotesKeyValueRelatedField``
 
-This field type is supported by :class:`pulp.app.serializers.base.ModelSerializer`, and exposes the
-mapping form in the representation of the object being serialized with read and write capabilities.
+This field type is supported by :class:`pulp.app.serializers.base.PulpModelSerializer`, and exposes
+the mapping form in the representation of the object being serialized with read and write
+capabilities.
 
 For example:
 
@@ -238,7 +239,7 @@ Building Explicit Serializers
 
 In Pulp 3, the REST API will adhere to semantic versioning. This means that we need to exercise
 control over what fields are exposed in the REST API, and that those fields are always exposed
-the same way so that we don't break backward compatibility. To convert a ModelSerializer to its
+the same way so that we don't break backward compatibility. To convert a PulpModelSerializer to its
 explicit Serializer class, DRF provides an excellent bit of functionality::
 
 	>>> from serializers import RepositorySerializer
@@ -253,7 +254,7 @@ explicit Serializer class, DRF provides an excellent bit of functionality::
 
 DRF Serializers fully support __repr__, which means calling repr() on them will return a string
 that can be used to create that serializer. So, to see what fields DRF automatically generated
-for a ModelSerializer, either instantiate it in an interpreter, or capture the output via repr()
+for a PulpModelSerializer, either instantiate it in an interpreter, or capture the output via repr()
 and output it explicitly.
 
 

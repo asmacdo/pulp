@@ -1,10 +1,10 @@
 from rest_framework import serializers
 
 from pulp.app import models
-from pulp.app.serializers import NotesKeyValueRelatedField, ModelSerializer
+from pulp.app.serializers import NotesKeyValueRelatedField, PulpModelSerializer
 
 
-class ConsumerSerializer(ModelSerializer):
+class ConsumerSerializer(PulpModelSerializer):
     _href = serializers.HyperlinkedIdentityField(
         view_name='consumers-detail',
         lookup_field='name',
@@ -29,4 +29,4 @@ class ConsumerSerializer(ModelSerializer):
 
     class Meta:
         model = models.Consumer
-        fields = ModelSerializer.Meta.fields + ('name', 'description', 'notes')
+        fields = PulpModelSerializer.Meta.fields + ('name', 'description', 'notes')

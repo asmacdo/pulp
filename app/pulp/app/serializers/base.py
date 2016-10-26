@@ -61,7 +61,7 @@ def view_name_for_model(model_obj, view_action):
 
 
 # Defined here instead of generic.py to avoid potential circular imports issues,
-# since this is used by ModelSerializer
+# since this is used by PulpModelSerializer
 class GenericKeyValueRelatedField(serializers.DictField):
     """
     Base class for GenericKeyValueMutableMapping model implementations.
@@ -79,7 +79,7 @@ class GenericKeyValueRelatedField(serializers.DictField):
         return super(GenericKeyValueRelatedField, self).to_representation(value.mapping)
 
 
-class ModelSerializer(serializers.HyperlinkedModelSerializer):
+class PulpModelSerializer(serializers.HyperlinkedModelSerializer):
     """Base serializer for use with :class:`pulp.app.models.Model`
 
     This ensures that all Serializers provide values for the '_href` field, and
@@ -94,7 +94,7 @@ class ModelSerializer(serializers.HyperlinkedModelSerializer):
         # pop related fields out of validated data
         generic_field_mappings = self._generic_field_mappings(validated_data)
 
-        instance = super(ModelSerializer, self).create(validated_data)
+        instance = super(PulpModelSerializer, self).create(validated_data)
 
         # populate related fields
         self._populate_generic_fields(instance, generic_field_mappings)
@@ -105,7 +105,7 @@ class ModelSerializer(serializers.HyperlinkedModelSerializer):
         # pop related fields out of validated data
         generic_field_mappings = self._generic_field_mappings(validated_data)
 
-        instance = super(ModelSerializer, self).update(instance, validated_data)
+        instance = super(PulpModelSerializer, self).update(instance, validated_data)
 
         # populate related fields
         self._populate_generic_fields(instance, generic_field_mappings)
@@ -129,7 +129,7 @@ class ModelSerializer(serializers.HyperlinkedModelSerializer):
             field.mapping.replace(mapping)
 
 
-class MasterModelSerializer(ModelSerializer):
+class MasterModelSerializer(PulpModelSerializer):
     """
     Base serializer for all Master/Detail Models.
 
@@ -158,7 +158,7 @@ class MasterModelSerializer(ModelSerializer):
     type = serializers.CharField(read_only=True)
 
     class Meta:
-        fields = ModelSerializer.Meta.fields + ('type',)
+        fields = PulpModelSerializer.Meta.fields + ('type',)
 
     def to_representation(self, instance):
         """
@@ -166,7 +166,7 @@ class MasterModelSerializer(ModelSerializer):
         """
 
         # This is very similar to DRF's default to_representation implementation in
-        # ModelSerializer, but makes sure to cast Detail instances and use the correct
+        # PulpModelSerializer, but makes sure to cast Detail instances and use the correct
         # serializer for rendering so that all detail fields are included.
         ret = OrderedDict()
 

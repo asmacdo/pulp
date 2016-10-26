@@ -1,11 +1,11 @@
 from rest_framework import serializers
 
 from pulp.app import models
-from pulp.app.serializers import (ModelSerializer, NotesKeyValueRelatedField,
+from pulp.app.serializers import (PulpModelSerializer, NotesKeyValueRelatedField,
                                   MasterModelSerializer)
 
 
-class RepositorySerializer(ModelSerializer):
+class RepositorySerializer(PulpModelSerializer):
     # _href is normally provided by the base class, but Repository's
     # "name" lookup field means _href must be explicitly declared.
     _href = serializers.HyperlinkedIdentityField(
@@ -35,8 +35,8 @@ class RepositorySerializer(ModelSerializer):
 
     class Meta:
         model = models.Repository
-        fields = ModelSerializer.Meta.fields + ('name', 'description', 'notes',
-                                                'last_content_added', 'last_content_removed')
+        fields = PulpModelSerializer.Meta.fields + ('name', 'description', 'notes',
+                                                    'last_content_added', 'last_content_removed')
 
 
 class ImporterSerializer(MasterModelSerializer):

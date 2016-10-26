@@ -1,10 +1,10 @@
 from rest_framework import serializers
 
 from pulp.app import models
-from pulp.app.serializers import ModelSerializer
+from pulp.app.serializers import PulpModelSerializer
 
 
-class TaskTagSerializer(serializers.ModelSerializer):
+class TaskTagSerializer(PulpModelSerializer):
     name = serializers.CharField(
         help_text="The name of the tag"
     )
@@ -14,7 +14,7 @@ class TaskTagSerializer(serializers.ModelSerializer):
         fields = ('name',)
 
 
-class TaskSerializer(ModelSerializer):
+class TaskSerializer(PulpModelSerializer):
     _href = serializers.HyperlinkedIdentityField(
         view_name='tasks-detail',
     )
@@ -71,12 +71,12 @@ class TaskSerializer(ModelSerializer):
 
     class Meta:
         model = models.Task
-        fields = ModelSerializer.Meta.fields + ('group', 'state', 'started_at',
-                                                'finished_at', 'non_fatal_errors',
-                                                'result', 'worker', 'parent', 'tags')
+        fields = PulpModelSerializer.Meta.fields + ('group', 'state', 'started_at',
+                                                    'finished_at', 'non_fatal_errors',
+                                                    'result', 'worker', 'parent', 'tags')
 
 
-class WorkerSerializer(ModelSerializer):
+class WorkerSerializer(PulpModelSerializer):
     _href = serializers.HyperlinkedIdentityField(
         view_name='workers-detail',
         lookup_field='name'
@@ -94,4 +94,4 @@ class WorkerSerializer(ModelSerializer):
 
     class Meta:
         model = models.Worker
-        fields = ModelSerializer.Meta.fields + ('name', 'last_heartbeat')
+        fields = PulpModelSerializer.Meta.fields + ('name', 'last_heartbeat')
