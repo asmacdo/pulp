@@ -58,8 +58,8 @@ class RepositoryViewSet(NamedModelViewSet):
 class ImporterViewSet(NamedModelViewSet):
     # Indicates that importer urls should be routed through their associated repository.
     nested_parent = RepositoryViewSet
-    # Name the parameter to generate the link. This is important because `name` in this url refers
-    # to `Importer.name`, not `Repository.name`
+    # Choose a name to represent the parent's lookup_field. Necessary because the parent's
+    # lookup_field cannot be the same as the detail viewset's lookup_field.
     nested_parent_lookup_name = 'repo_name'
     endpoint_name = 'importers'
     serializer_class = ImporterSerializer

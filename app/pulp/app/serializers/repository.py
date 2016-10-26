@@ -46,11 +46,72 @@ class ImporterSerializer(MasterModelSerializer):
 
     Every subclass must override the `_href` field with a `RepositoryNestedIdentityField` that
     defines the view_name.
+
+    `repository` is defined on the `Importer` model, but is excluded here because the user must
+    already know about a `Repository` and its relationship to the Importer because the REST
+    endpoint includes `Repository.name`.
     """
+    # _href is normally provided by the base class, but Importers's
+    # "name" lookup field means _href must be explicitly declared.
+    _href = serializers.HyperlinkedIdentityField(
+        view_name='importers-detail',
+        lookup_field='name',
+    )
+
     name = serializers.CharField(
         help_text='A name for this importer, unique within the associated repository.'
+    )
+    last_updated = serializers.DateTimeField(
+        help_text='Timestamp of the most recent update of this configuration.',
+        read_only=True
+    )
+
+    feed_url = serializers.CharField(help_text='The URL of an external content source.')
+    validate = serializers.BooleanField(help_text='Whether to validate imported content.')
+    ssl_ca_certificate = serializers.CharField(
+        help_text='A PEM encoded CA certificate used to validate the server '
+                  'certificate presented by the external source.'
+    )
+    ssl_client_certificate = serializers.CharField(
+        help_text='A PEM encoded client certificate used for authentication.'
+    )
+    ssl_client_key = serializers.CharField(
+        help_text='A PEM encoded private key used for authentication.'
+    )
+    ssl_validation = serializers.BooleanField(
+        help_text='Indicates whether SSL peer validation must be performed.'
+    )
+    proxy_url = serializers.CharField(
+        help_text='The optional proxy URL. Format: scheme://user:password@host:port'
+    )
+    basic_auth_user = serializers.CharField(
+        help_text='The username to be used in HTTP basic authentication when syncing.'
+    )
+    basic_auth_password = serializers.CharField(
+        help_text='The password to be used in HTTP basic authentication when syncing.'
+    )
+    max_download_bandwidth = serializers.IntegerField(
+        help_text='The max amount of bandwidth used per download (Bps).'
+    )
+    max_concurrent_downloads = serializers.IntegerField(
+        help_text='The number of concurrent downloads permitted.'
+    )
+    download_policy = serializers.MultipleChoiceField(
+        help_text='The policy for downloading content.',
+        allow_empty=False,
+        choices=models.Importer.DOWNLOAD_POLICIES,
+    )
+    last_sync = serializers.DateTimeField(
+        help_text='Timestamp of the most recent sync.',
+        read_only=True
     )
 
     class Meta:
         abstract = True
-        fields = MasterModelSerializer.Meta.fields + ('name',)
+        model = models.Importer
+        fields = MasterModelSerializer.Meta.fields + (
+            'name', 'last_updated', 'feed_url', 'validate', 'ssl_ca_certificate',
+            'ssl_client_certificate', 'ssl_client_key', 'ssl_validation', 'proxy_url',
+            'basic_auth_user', 'basic_auth_password', 'max_download_bandwidth',
+            'max_concurrent_downloads', 'download_policy', 'last_sync',
+        )
