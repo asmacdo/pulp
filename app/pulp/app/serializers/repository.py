@@ -50,7 +50,12 @@ class ImporterSerializer(MasterModelSerializer):
     name = serializers.CharField(
         help_text='A name for this importer, unique within the associated repository.'
     )
+    repository = serializers.HyperlinkedRelatedField(
+        view_name='repositories-detail',
+        queryset=models.Repository.objects.all(),
+        lookup_field='name',
+    )
 
     class Meta:
         abstract = True
-        fields = MasterModelSerializer.Meta.fields + ('name',)
+        fields = MasterModelSerializer.Meta.fields + ('name', 'repository')
