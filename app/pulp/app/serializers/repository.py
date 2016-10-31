@@ -48,12 +48,17 @@ class ImporterSerializer(MasterModelSerializer):
     defines the view_name.
     """
     name = serializers.CharField(
-        help_text='A name for this importer, unique within the associated repository.'
+        help_text='A name for this importer, unique within the associated repository.',
+        # TODO(asmacdo) make name write_only
+        # write_only=True,
     )
+
+    """TODO(asmacdo) Leave repository on the base serializer"""
     repository = serializers.HyperlinkedRelatedField(
         view_name='repositories-detail',
         queryset=models.Repository.objects.all(),
         lookup_field='name',
+        # TODO(asmacdo)help_text=
     )
 
     class Meta:

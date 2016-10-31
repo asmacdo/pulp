@@ -35,12 +35,18 @@ class RepositoryNestedIdentityField(serializers.HyperlinkedIdentityField):
         }
         return reverse(view_name, kwargs=url_kwargs, request=request, format=format)
 
+    """
+    TODO(asmacdo) I dont think this works. Figure out when this is used and what arguments
+    are coming in.
+    """
     def get_object(self, view_name, view_args, view_kwargs):
         """
         Used to query for an object from its name and associated repository name.
         """
         lookup_kwargs = {
             'repository__name': view_kwargs['repo_name'],
+            # TODO(asmacdo) alter `get_object`
+            # 'repo_name': view_kwargs['repo_name'],
             'name': view_kwargs['name']
         }
         return self.get_queryset().get(**lookup_kwargs)

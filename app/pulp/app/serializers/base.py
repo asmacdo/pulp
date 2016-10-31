@@ -85,6 +85,19 @@ class ModelSerializer(serializers.HyperlinkedModelSerializer):
     This ensures that all Serializers provide values for the '_href` field, and
     adds read/write support for :class:`pulp.app.serializers.GenericKeyValueRelatedField`
     nested fields.
+
+    TODO(asmacdo) move to story
+    All serializers that inherit from this class should explicitly have to declare each field that
+    exists on the model but not the serializer.
+
+    This is normally done by using __all__ and then defining exlclude fields a field in Meta. We
+    will do it slightly differently, and we will assert that:
+        set(__all__) - set(exclude) = set(fields)
+    This is done to enforce that every field on a model must either have a serializer or have been
+    deliberately ignored. By convention, the reason for excluding a field will be documented in the
+    child class that does so.
+
+    This will enforce
     """
 
     class Meta:

@@ -4,6 +4,7 @@ from rest_framework import decorators, pagination
 from pulp.app.models import Importer, Repository
 from pulp.app.pagination import UUIDPagination
 from pulp.app.serializers import ContentSerializer, RepositorySerializer
+from pulp.app.serializers.fields import RepositoryRelatedField
 from pulp.app.serializers.repository import ImporterSerializer
 from pulp.app.viewsets import NamedModelViewSet
 from pulp.app.viewsets.custom_filters import CharInFilter
