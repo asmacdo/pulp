@@ -53,14 +53,6 @@ class ImporterSerializer(MasterModelSerializer):
         # write_only=True,
     )
 
-    """TODO(asmacdo) Leave repository on the base serializer"""
-    repository = serializers.HyperlinkedRelatedField(
-        view_name='repositories-detail',
-        queryset=models.Repository.objects.all(),
-        lookup_field='name',
-        # TODO(asmacdo)help_text=
-    )
-
     class Meta:
         abstract = True
-        fields = MasterModelSerializer.Meta.fields + ('name', 'repository')
+        fields = MasterModelSerializer.Meta.fields + ('name',)

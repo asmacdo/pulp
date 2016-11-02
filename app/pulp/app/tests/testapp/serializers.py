@@ -31,14 +31,14 @@ class TestImporterSerializer(ImporterSerializer):
         fields = ImporterSerializer.Meta.fields
 
 
-"""TODO(asmacdo) second serializer"""
-# class TestCreateImporterSerializer(TestImporterSerializer):
-#     repository = serializers.HyperlinkedRelatedField(
-#         lookup_field='name',
-#         view_name='repositories-detail',
-#         queryset=models.Repository.objects.all(),
-#         write_only=True,
-#     )
-#     class Meta:
-#         abstract = True
-#         fields = TestImporterSerializer.Meta.fields + ('repository',)
+class TestCreateImporterSerializer(TestImporterSerializer):
+    repository = serializers.HyperlinkedRelatedField(
+        lookup_field='name',
+        view_name='repositories-detail',
+        queryset=models.Repository.objects.all(),
+    )
+
+    class Meta:
+        model = TestImporterSerializer.Meta.model
+        abstract = True
+        fields = TestImporterSerializer.Meta.fields + ('repository',)

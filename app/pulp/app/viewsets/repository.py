@@ -1,5 +1,6 @@
 from django_filters.rest_framework import filters, filterset
 from rest_framework import decorators, pagination
+from rest_framework.response import Response
 
 from pulp.app.models import Importer, Repository
 from pulp.app.pagination import UUIDPagination
@@ -65,3 +66,14 @@ class ImporterViewSet(NamedModelViewSet):
     endpoint_name = 'importers'
     serializer_class = ImporterSerializer
     queryset = Importer.objects.all()
+
+    def list(self, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        queryset = queryset.filter(repository__name=kwargs['repo_name'])
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)

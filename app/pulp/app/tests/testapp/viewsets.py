@@ -7,9 +7,7 @@ from pulp.app import models, serializers, viewsets
 
 from pulp.app.tests.testapp.models import TestContent, TestImporter
 from pulp.app.tests.testapp.serializers import (TestContentSerializer, TestImporterSerializer,
-                                                )
-"""TODO(asmacdo) second serializer"""
-                                                # TestCreateImporterSerializer)
+                                                TestCreateImporterSerializer)
 
 from rest_framework import status
 from rest_framework.response import Response
@@ -30,23 +28,18 @@ class TestImporterViewSet(viewsets.ImporterViewSet):
     queryset = TestImporter.objects.all()
     serializer_class = TestImporterSerializer
 
-    """Parent definition (untested for typos, lives in rest_framework/mixins.py)"""
-    # def create(self, request, *args, **kwargs):
-    #     serializer = self.get_serializer(data=request.data)
-    #     serializer.is_valid(raise_exception=True)
-    #     self.perform_create(serializer)
-    #     headers = self.get_success_headers(serializer.data)
-    #     return Response(serializer.data, status.status.HTTP_201_CREATED, headers=headers)
-
-    """TODO(asmacdo) second serializer"""
-    # def create(self, request, *args, **kwargs):
-    #     repo = self.get_object()
-    #     repo_href = serializers.RepositoryRelatedField().get_url(
-    #         repo, 'repositories-detail', request, None
-    #     )
-    #     request.data.update(repository=repo_href)
-    #     create_serializer = TestCreateImporterSerializer(data=request.data)
-    #     create_serializer.is_valid(raise_exception=True)
-    #     self.perform_create(create_serializer)
-    #     headers = self.get_success_headers(create_serializer)
-    #     return Response(create_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    def create(self, request, *args, **kwargs):
+        """
+        Override create so that we can use a serializer that has a repository field.
+        """
+        repo = models.Repository.objects.filter(name=kwargs['repo_name'])[0]
+        repo_href = serializers.RepositoryRelatedField().get_url(
+            repo, 'repositories-detail', request, None
+        )
+        request.data.update(repository=repo_href)
+        create_serializer = TestCreateImporterSerializer(data=request.data,
+                                                         context={'request': request})
+        create_serializer.is_valid(raise_exception=True)
+        self.perform_create(create_serializer)
+        headers = self.get_success_headers(create_serializer)
+        return Response(create_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
