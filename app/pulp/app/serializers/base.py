@@ -248,4 +248,4 @@ class DetailRelatedField(_DetailFieldMixin, serializers.HyperlinkedRelatedField)
 
     def get_object(self, *args, **kwargs):
         # return the cast object, not the generic contentunit
-        return super(DetailRelatedField, self).get_object(*args, **kwargs)
+        return super(DetailRelatedField, self).get_object(*args, **kwargs).cast()

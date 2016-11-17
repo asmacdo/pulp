@@ -1,16 +1,18 @@
 from rest_framework import serializers
 
 from pulp.app import models
-from pulp.app.serializers import DetailRelatedField
+from pulp.app.serializers import base, DetailRelatedField
 
 
 class ContentRelatedField(DetailRelatedField):
     """
     Serializer Field for use when relating to Content Detail Models
     """
-    lookup_field = 'pk'
     queryset = models.Content.objects.all()
 
+    def _view_name(self, obj):
+        obj = models.Content.objects.filter(pk=obj.pk)[0].cast()
+        return base.view_name_for_model(obj, 'detail')
 
 
 class RepositoryRelatedField(serializers.HyperlinkedRelatedField):

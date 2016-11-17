@@ -97,7 +97,7 @@ class RepositoryContentSerializer(ModelSerializer):
     #     super(RepositoryContentSerializer, self).__init__(*args, **kwargs)
     #     self.fields['content'] = ContentURLSerializer(context=self.context)
 
-    content = ContentRelatedField(context=self.context)
+    content = ContentRelatedField()
     repository = RepositoryRelatedField()
 
     class Meta:
