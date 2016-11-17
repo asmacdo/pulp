@@ -91,13 +91,13 @@ class ContentURLSerializer(MasterModelSerializer):
         fields = MasterModelSerializer.Meta.fields
         model = models.RepositoryContent
 
+
 class RepositoryContentSerializer(ModelSerializer):
-    def __init__(self, *args, **kwargs):
-        super(RepositoryContentSerializer, self).__init__(*args, **kwargs)
-        self.fields['content'] = ContentURLSerializer(context=self.context)
+    # def __init__(self, *args, **kwargs):
+    #     super(RepositoryContentSerializer, self).__init__(*args, **kwargs)
+    #     self.fields['content'] = ContentURLSerializer(context=self.context)
 
-    #content = ContentRelatedField(context=self.context)
-
+    content = ContentRelatedField(context=self.context)
     repository = RepositoryRelatedField()
 
     class Meta:

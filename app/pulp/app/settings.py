@@ -28,7 +28,9 @@ SECRET_KEY = '*u&ouzf)09#*dnm8t9jxahz-y=uwe0g&yn9ir-(lj@l*$cc%qo'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.121.172']
+ALLOWED_HOSTS = ['192.168.121.166']
+# ALLOWED_HOSTS = ['*']
+
 
 MEDIA_ROOT = '/var/lib/pulp/content/'
 DEFAULT_FILE_STORAGE = 'pulp.app.models.storage.FileSystem'
@@ -153,7 +155,7 @@ STATIC_URL = '/static/'
 # A set of default settings to use if the configuration file in
 # /etc/pulp/ is missing or if it does not have values for every setting
 _DEFAULT_PULP_SETTINGS = {
-    'allowed_hosts': [socket.getfqdn()],
+    # 'allowed_hosts': [socket.getfqdn()],
     # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
     'databases': {
         'default': {
