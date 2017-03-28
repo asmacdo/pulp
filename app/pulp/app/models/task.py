@@ -187,11 +187,12 @@ class Task(Model):
         # to finished.
         if self.state not in TASK_FINAL_STATES:
             self.state = Task.COMPLETED
+            # If already marked final, do not save the changed finsished_at timestamp or result.
+            self.save()
         else:
             msg = _('Task set_completed() occurred but Task %s is already in final state')
             _logger.warning(msg % self.pk)
 
-        self.save()
 
     def set_failed(self, exc, einfo):
         """
