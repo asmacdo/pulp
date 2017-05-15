@@ -32,14 +32,6 @@ class RepositoryViewSet(NamedModelViewSet):
     filter_class = RepositoryFilter
 
     @decorators.detail_route()
-    def content(self, request, name):
-        repo = self.get_object()
-        paginator = UUIDPagination()
-        page = paginator.paginate_queryset(repo.content, request)
-        serializer = ContentSerializer(page, many=True, context={'request': request})
-        return paginator.get_paginated_response(serializer.data)
-
-    @decorators.detail_route()
     def importers(self, request, name):
         """
         Creates a nested `importers/` endpoint that returns each importer associated with this
@@ -159,6 +151,7 @@ class RepositoryContentViewSet(NamedModelViewSet):
 
 
 class RepositoryVersionViewSet(NamedModelViewSet):
+    filter_fields = ('repository__name',)
     endpoint_name = 'repositoryversions'
     queryset = RepositoryVersion.objects.all()
     serializer_class = RepositoryVersionSerializer

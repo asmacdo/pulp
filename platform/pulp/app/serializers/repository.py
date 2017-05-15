@@ -52,7 +52,7 @@ class RepositorySerializer(ModelSerializer):
         model = models.Repository
         fields = ModelSerializer.Meta.fields + ('name', 'description', 'notes', 'scratchpad',
                                                 'last_content_added', 'last_content_removed',
-                                                'importers', 'publishers', 'versions')
+                                                'importers', 'publishers')
 
 
 class ImporterSerializer(MasterModelSerializer):
@@ -182,9 +182,9 @@ class RepositoryContentSerializer(serializers.ModelSerializer):
     # rest_framework.serializers.ModelSerializer instead of pulp.app.serializers.ModelSerializer
     content = ContentRelatedField()
     repository = RepositoryRelatedField()
-    vadded = serializers.HyperlinkedRelatedField(view_name='repositoryversion-detail',
+    vadded = serializers.HyperlinkedRelatedField(view_name='repositoryversions-detail',
                                                  read_only=True)
-    vremoved = serializers.HyperlinkedRelatedField(view_name='repositoryversion-detail',
+    vremoved = serializers.HyperlinkedRelatedField(view_name='repositoryversions-detail',
                                                    read_only=True)
 
     class Meta:
