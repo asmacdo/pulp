@@ -6,7 +6,8 @@ from .generic import (GenericRelationModel, GenericKeyValueManager, GenericKeyVa
 
 from .consumer import Consumer, ConsumerContent  # NOQA
 from .content import Content, Artifact  # NOQA
-from .repository import Repository, Importer, Publisher, RepositoryContent  # NOQA
+from .repository import (Repository, Importer, Publisher, RepositoryContent,  # NOQA
+                         RepositoryVersion)  # NOQA
 
 from .catalog import DownloadCatalog  # NOQA
 from .task import ReservedResource, Worker, Task, TaskTag, TaskLock  # NOQA

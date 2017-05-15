@@ -187,34 +187,78 @@ class Publisher(ContentAdaptor):
         default_related_name = 'publishers'
 
 
+class RepositoryVersion(Model):
+    """
+    A version of a repository's content set.
+
+    Fields:
+        num (models.PositiveIntegerField): A positive integer that uniquely identifies a version
+            of a specific repository. Each new version for a repo should have this field set to
+            1 + the most recent version.
+        created (models.DateTimeField): When the version was created.
+        action  (models.TextField): The action that produced the version.
+
+    Relations:
+
+        repository (models.ForeignKey): The associated repository.
+    """
+    SYNC = 'sync'
+    PUBLISH = 'publish'
+    COPY = 'copy'
+    UPLOAD = 'upload'
+    ACTIONS = (
+        (SYNC, 'Sync'),
+        (PUBLISH, 'Publish'),
+        (COPY, 'Copy'),
+        (UPLOAD, 'Upload'),
+    )
+
+    repository = models.ForeignKey(Repository)
+    num = models.PositiveIntegerField(db_index=True)
+    created = models.DateTimeField(auto_now_add=True)
+    action = models.TextField(choices=ACTIONS)
+
+    class Meta:
+        default_related_name = 'versions'
+        unique_together = ('repository', 'num')
+
+    def content(self):
+        """
+        Returns:
+
+            QuerySet: The Content objects that are related to this version.
+        """
+        relationships = RepositoryContent.objects.filter(
+            repository=self.repository, vadded__num__lte=self.num).exclude(
+            vremoved__num__lte=self.num
+        )
+        # Surely there is a better way to access the model. Maybe it should be in this module.
+        content_model = self.repository.content.model
+        # This causes a SQL subquery to happen. There may be more efficient SQL, but this is
+        # at least correct.
+        return content_model.objects.filter(repositorycontent__in=relationships)
+
+
 class RepositoryContent(Model):
     """
     Association between a repository and its contained content.
 
-    Fields:
-
-        created (models.DatetimeField): When the association was created.
 
     Relations:
 
         content (models.ForeignKey): The associated content.
         repository (models.ForeignKey): The associated repository.
+        vadded (models.ForeignKey): A version in which the content was added to the repository.
+        vremoved (models.ForeignKey): The next version following vadded where the content was
+            removed from the repository. This may be null.
     """
     content = models.ForeignKey('Content', on_delete=models.CASCADE)
     repository = models.ForeignKey(Repository, on_delete=models.CASCADE)
 
-    def save(self, *args, **kwargs):
-        """
-        Save the association.
-        """
-        self.repository.last_content_added = timezone.now()
-        self.repository.save()
-        super(RepositoryContent, self).save(*args, **kwargs)
+    vadded = models.ForeignKey(RepositoryVersion, related_name='added_content')
+    vremoved = models.ForeignKey(RepositoryVersion, null=True, related_name='removed_content')
 
-    def delete(self, *args, **kwargs):
-        """
-        Delete the association.
-        """
-        self.repository.last_content_removed = timezone.now()
-        self.repository.save()
-        super(RepositoryContent, self).delete(*args, **kwargs)
+    class Meta:
+        default_related_name = 'repositorycontent'
+        unique_together = ('repository', 'content', 'vadded')
+

@@ -3,11 +3,12 @@ from django_filters import CharFilter
 from rest_framework import decorators
 
 from pulp.app import tasks
-from pulp.app.models import Importer, Publisher, Repository, RepositoryContent
+from pulp.app.models import Importer, Publisher, Repository, RepositoryContent, RepositoryVersion
 from pulp.app.pagination import UUIDPagination, NamePagination
 from pulp.app.response import OperationPostponedResponse
 from pulp.app.serializers import (ContentSerializer, ImporterSerializer, PublisherSerializer,
-                                  RepositorySerializer, RepositoryContentSerializer)
+                                  RepositorySerializer, RepositoryContentSerializer,
+                                  RepositoryVersionSerializer)
 from pulp.app.viewsets import NamedModelViewSet
 from pulp.app.viewsets.custom_filters import CharInFilter
 from pulp.common import tags
@@ -155,3 +156,9 @@ class RepositoryContentViewSet(NamedModelViewSet):
     endpoint_name = 'repositorycontents'
     queryset = RepositoryContent.objects.all()
     serializer_class = RepositoryContentSerializer
+
+
+class RepositoryVersionViewSet(NamedModelViewSet):
+    endpoint_name = 'repositoryversions'
+    queryset = RepositoryVersion.objects.all()
+    serializer_class = RepositoryVersionSerializer
