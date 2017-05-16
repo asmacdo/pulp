@@ -26,6 +26,8 @@ class TestVR(unittest.TestCase):
         cls.r1 = Repository.objects.create(name='r1')
         cls.r2 = Repository.objects.create(name='r2')
         cls.r3 = Repository.objects.create(name='r3')
+        cls.overlap = Repository.objects.create(name='overlap')
+
 
         cls.r1v1 = RepositoryVersion.objects.create(repository=cls.r1, num=1, action='upload')
         cls.r1v2 = RepositoryVersion.objects.create(repository=cls.r1, num=2, action='upload')
@@ -34,6 +36,8 @@ class TestVR(unittest.TestCase):
         cls.r3v2 = RepositoryVersion.objects.create(repository=cls.r3, num=2, action='upload')
         cls.r3v3 = RepositoryVersion.objects.create(repository=cls.r3, num=3, action='upload')
         cls.r3v4 = RepositoryVersion.objects.create(repository=cls.r3, num=4, action='upload')
+        cls.overlap_1 = RepositoryVersion.objects.create(repository=cls.overlap, num=1, action='upload')
+        cls.overlap_2 = RepositoryVersion.objects.create(repository=cls.overlap, num=2, action='upload')
 
         cls.rc1 = RepositoryContent.objects.create(repository=cls.r1, content=cls.c1,
                                                    vadded=cls.r1v1, vremoved=cls.r1v2,)
@@ -43,6 +47,10 @@ class TestVR(unittest.TestCase):
                                                    vadded=cls.r2v1)
         cls.rc4 = RepositoryContent.objects.create(repository=cls.r2, content=cls.c2,
                                                    vadded=cls.r2v1)
+        cls.oc1 = RepositoryContent.objects.create(repository=cls.overlap, content=cls.c1,
+                                                   vadded=cls.overlap_1)
+        cls.oc2 = RepositoryContent.objects.create(repository=cls.overlap, content=cls.c1,
+                                                   vadded=cls.overlap_2)
 
         # test adding, removing, adding, removing the same content from a repo
         cls.rc5 = RepositoryContent.objects.create(repository=cls.r3, content=cls.c1,
@@ -89,3 +97,13 @@ class TestVR(unittest.TestCase):
     def test_r3v4_content(self):
         content = self.r3v4.content()
         self.assertTrue(self.c1 not in content)
+
+    def test_overlap_1(self):
+        content = self.overlap_1.content()
+        self.assertTrue(self.c1 in content)
+        self.assertEqual(len(content), 1)
+
+    def test_overlap_2(self):
+        content = self.overlap_2.content()
+        self.assertTrue(self.c1 in content)
+        self.assertEqual(len(content), 1)
