@@ -77,12 +77,12 @@ class ImporterSerializer(MasterModelSerializer, NestedHyperlinkedModelSerializer
     )
 
     feed_url = serializers.CharField(
-        help_text='The URL of an external content source.',
+        help_text='Contains the URL of an external content source.',
         required=False,
     )
 
     validate = serializers.BooleanField(
-        help_text='Whether to validate imported content.',
+        help_text='If True, the plugin will validate imported content.',
         required=False,
     )
 
@@ -103,15 +103,15 @@ class ImporterSerializer(MasterModelSerializer, NestedHyperlinkedModelSerializer
         required=False,
     )
     ssl_validation = serializers.BooleanField(
-        help_text='Indicates whether SSL peer validation must be performed.',
+        help_text='If True, SSL peer validation must be performed.',
         required=False,
     )
     proxy_url = serializers.CharField(
-        help_text='The optional proxy URL. Format: scheme://user:password@host:port',
+        help_text='The proxy URL. Format: scheme://user:password@host:port',
         required=False,
     )
-    basic_auth_user = serializers.CharField(
-        help_text='The username to be used in HTTP basic authentication when syncing.',
+    username = serializers.CharField(
+        help_text='Contains tehThe username to be used in HTTP basic authentication when syncing.',
         write_only=True,
         required=False,
     )
