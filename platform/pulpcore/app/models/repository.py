@@ -95,38 +95,6 @@ class ContentAdaptor(MasterModel):
 class Importer(ContentAdaptor):
     """
     A content importer.
-
-    Fields:
-
-        name (models.TextField): Name of this importer, unique together with repository name.
-        feed_url (models.TextField): The URL of an external content source.
-
-        validate (models.BooleanField): If true, the plugin will validate the imported context.
-        ssl_ca_certificate (models.TextField): A PEM encoded CA certificate used to validate the
-            server certificate presented by the external source.
-        ssl_client_certificate (models.TextField): A PEM encoded client certificate used
-            for authentication.
-        ssl_client_key (models.TextField): A PEM encoded private key used for authentication.
-        ssl_validation (models.BooleanField): If true, SSL peer validation must be performed.
-        proxy_url (models.TextField): The optional proxy URL.
-            Format: scheme://user:password@host:port
-        username (models.TextField): The username to be used for authentication when syncing.
-        password (models.TextField): The password to be used for authentication when syncing.
-        download_policy (models.TextField): Contains the downloading policy name.
-            This is a choice of three options:
-            - immediate (default): The sync task is not complete until downloading is finished.
-            - background: Downloading is started by the sync but occurs in the background. The sync
-                          task completes before downloading is complete.
-            - on_demand: Sync tasks update repository metadata but does not download content.
-                         Downloads occur on demand as driven by client requests for content.
-
-        sync_mode: (models.TextField): Two choices 'additive' and 'mirror':
-            - additive (default) - all remote content is added to the local repository on sync. During sync no content is removed from the local repository.
-            - mirror - the local content will mirror the remote content exactly, removing local content if not also present in the remote content.
-
-        last_updated (models.DatetimeField): Datetime of the last update of the importer.
-        last_synced (models.DatetimeField): Datetime of the last importer sync.
-
     """
     TYPE = 'importer'
 
@@ -135,15 +103,16 @@ class Importer(ContentAdaptor):
     ON_DEMAND = 'on_demand'
     BACKGROUND = 'background'
     DOWNLOAD_POLICIES = (
-        (IMMEDIATE, 'Download Immediately'),
-        (ON_DEMAND, 'Download On Demand'),
-        (BACKGROUND, 'Download In Background'))
-    # Sync modes
+        (IMMEDIATE, 'Sync task is not complete until downloading is finished.'),
+        (ON_DEMAND, 'Sync task updates metadata but does not download content until requested.'),
+        (BACKGROUND, 'Sync task updates metadata and completes. Content downloads in background'))
+
+    # Sync Modes
     ADDITIVE = 'additive'
     MIRROR = 'mirror'
     SYNC_MODES = (
         (ADDITIVE, 'Add new content, keep content that was removed upstream.')
-        (MIRROR, 'Add new content, if content was removed upstream, remove it.'))
+        (MIRROR, 'Add new content, remove content was removed upstream.'))
 
     # Setting this with "unique=True" will trigger a model validation warning, telling us that we
     # should use a OneToOneField here instead. While it is correct, doing it this way makes it
