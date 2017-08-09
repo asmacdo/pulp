@@ -67,25 +67,27 @@ class ImporterSerializer(MasterModelSerializer, NestedHyperlinkedModelSerializer
     _href = DetailNestedHyperlinkedIdentityField(
         lookup_field='name', parent_lookup_kwargs={'repository_name': 'repository__name'},
     )
-
     name = serializers.CharField(
         help_text=_('A name for this importer, unique within the associated repository.')
     )
-    last_updated = serializers.DateTimeField(
-        help_text='Timestamp of the most recent update of this configuration.',
-        read_only=True
-    )
-
     feed_url = serializers.CharField(
-        help_text='Contains the URL of an external content source.',
+        help_text='The URL of an external content source.',
         required=False,
     )
-
+    download_policy = serializers.ChoiceField(
+        help_text='The policy for downloading content.',
+        allow_blank=False,
+        choices=models.Importer.DOWNLOAD_POLICIES,
+    )
+    sync_mode = serializers.ChoiceField(
+        help_text='How the importer should handle difference with upstream repository.',
+        allow_blank=False,
+        choices=models.Importer.SYNC_MODES,
+    )
     validate = serializers.BooleanField(
         help_text='If True, the plugin will validate imported content.',
         required=False,
     )
-
     ssl_ca_certificate = FileField(
         help_text='A PEM encoded CA certificate used to validate the server '
                   'certificate presented by the external source.',
@@ -111,22 +113,21 @@ class ImporterSerializer(MasterModelSerializer, NestedHyperlinkedModelSerializer
         required=False,
     )
     username = serializers.CharField(
-        help_text='Contains tehThe username to be used in HTTP basic authentication when syncing.',
+        help_text='The username to be used for authentication when syncing.',
         write_only=True,
         required=False,
     )
-    basic_auth_password = serializers.CharField(
-        help_text='The password to be used in HTTP basic authentication when syncing.',
+    password = serializers.CharField(
+        help_text='The password to be used for authentication when syncing.',
         write_only=True,
         required=False,
-    )
-    download_policy = serializers.ChoiceField(
-        help_text='The policy for downloading content.',
-        allow_blank=False,
-        choices=models.Importer.DOWNLOAD_POLICIES,
     )
     last_sync = serializers.DateTimeField(
         help_text='Timestamp of the most recent successful sync.',
+        read_only=True
+    )
+    last_updated = serializers.DateTimeField(
+        help_text='Timestamp of the most recent update of the importer configuration.',
         read_only=True
     )
 
@@ -136,9 +137,9 @@ class ImporterSerializer(MasterModelSerializer, NestedHyperlinkedModelSerializer
         abstract = True
         model = models.Importer
         fields = MasterModelSerializer.Meta.fields + (
-            'name', 'last_updated', 'feed_url', 'validate', 'ssl_ca_certificate',
+            'name', 'feed_url', 'download_policy', 'sync_mode', 'validate', 'ssl_ca_certificate',
             'ssl_client_certificate', 'ssl_client_key', 'ssl_validation', 'proxy_url',
-            'basic_auth_user', 'basic_auth_password', 'download_policy', 'last_sync', 'repository',
+            'username', 'password', 'last_sync', 'last_updated', 'repository',
         )
 
 
