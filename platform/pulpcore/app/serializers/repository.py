@@ -80,7 +80,7 @@ class ImporterSerializer(MasterModelSerializer, NestedHyperlinkedModelSerializer
         choices=models.Importer.DOWNLOAD_POLICIES,
     )
     sync_mode = serializers.ChoiceField(
-        help_text='How the importer should handle difference with upstream repository.',
+        help_text='How the importer should sync from the upstream repository.',
         allow_blank=False,
         choices=models.Importer.SYNC_MODES,
     )

@@ -105,13 +105,13 @@ class Importer(ContentAdaptor):
     DOWNLOAD_POLICIES = (
         (IMMEDIATE, 'Sync task is not complete until downloading is finished.'),
         (ON_DEMAND, 'Sync task updates metadata but does not download content until requested.'),
-        (BACKGROUND, 'Sync task updates metadata and completes. Content downloads in background'))
+        (BACKGROUND, 'Sync task updates metadata and completes. Downloads complete in background.'))
 
     # Sync Modes
     ADDITIVE = 'additive'
     MIRROR = 'mirror'
     SYNC_MODES = (
-        (ADDITIVE, 'Add new content, keep content that was removed upstream.')
+        (ADDITIVE, 'Add new content, keep content that was removed upstream.'),
         (MIRROR, 'Add new content, remove content was removed upstream.'))
 
     # Setting this with "unique=True" will trigger a model validation warning, telling us that we
