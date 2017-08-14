@@ -90,8 +90,8 @@ class Distribution(Model):
             this relative URL path and settings.
     """
 
-    name = models.CharField()
-    base_path = models.CharField(blank=False, null=False, unique=True)
+    name = models.CharField(max_length=255)
+    base_path = models.CharField(max_length=255, blank=False, null=False, unique=True)
     auto_updated = models.BooleanField(default=True)
     http = models.BooleanField(default=True)
     https = models.BooleanField(default=True)
