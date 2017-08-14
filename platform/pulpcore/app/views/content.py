@@ -9,6 +9,18 @@ from pulpcore.app.models import Distribution
 
 
 class ContentView(View):
+    """
+    Content endpoint.
+
+    URL matching algorithm.
+
+    http://redhat.com/cdn/stage/files/manifest
+                     |--------------||--------|
+                            (1)          (2)
+
+    1. Match: Distribution.base_path
+    2. Match: PublishedFile.relative_path
+    """
 
     BASE_URL = '/content'
 
@@ -45,6 +57,7 @@ class ContentView(View):
 
         Raises:
             ObjectDoesNotExist: The referenced object does not exist.
+            None: When not matched.
 
         """
         base_paths = self._base_paths(path)
