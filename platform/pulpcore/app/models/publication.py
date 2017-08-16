@@ -13,7 +13,7 @@ class Publication(Model):
         publisher (models.ForeignKey): The publisher that created the publication.
     """
 
-    created = models.DateTimeField(blank=True, null=True, auto_now_add=True)
+    created = models.DateTimeField(auto_now_add=True)
 
     publisher = models.ForeignKey('Publisher', on_delete=models.CASCADE)
 
@@ -29,7 +29,7 @@ class PublishedFile(Model):
         publication (models.ForeignKey): The publication in which the artifact is included.
 
     """
-    relative_path = models.CharField(blank=False, null=False, max_length=255)
+    relative_path = models.CharField(max_length=255)
 
     publication = models.ForeignKey(Publication, on_delete=models.CASCADE)
 
@@ -44,8 +44,7 @@ class PublishedArtifact(PublishedFile):
     Relations:
         content_artifact (models.ForeignKey): The referenced content artifact.
     """
-    content_artifact = models.ForeignKey(
-        'ContentArtifact', blank=True, null=True, on_delete=models.CASCADE)
+    content_artifact = models.ForeignKey('ContentArtifact', on_delete=models.CASCADE)
 
     class Meta:
         unique_together = ('publication', 'content_artifact')
@@ -91,7 +90,7 @@ class Distribution(Model):
     """
 
     name = models.CharField(max_length=255)
-    base_path = models.CharField(max_length=255, blank=False, null=False, unique=True)
+    base_path = models.CharField(max_length=255, unique=True)
     auto_updated = models.BooleanField(default=True)
     http = models.BooleanField(default=True)
     https = models.BooleanField(default=True)

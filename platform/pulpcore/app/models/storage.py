@@ -230,7 +230,7 @@ class FileSystem(Storage):
 
         Args:
             model (pulpcore.app.models.PublishedMetadata): A model instance.
-            name: The file name.
+            name (str): The file name.
 
         Returns:
             str: The absolute storage path.
