@@ -1,9 +1,10 @@
 import os
 
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.servers.basehttp import FileWrapper
 from django.http import HttpResponseNotFound, StreamingHttpResponse
 from django.views.generic import View
+
+from wsgiref.util import FileWrapper
 
 from pulpcore.app.models import Distribution
 
