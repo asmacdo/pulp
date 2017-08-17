@@ -15,9 +15,9 @@ class ContentView(View):
 
     URL matching algorithm.
 
-    http://redhat.com/cdn/stage/files/manifest
-                     |--------------||--------|
-                            (1)          (2)
+    http://redhat.com/content/cdn/stage/files/manifest
+                              |-------------||--------|
+                                     (1)          (2)
 
     1. Match: Distribution.base_path
     2. Match: PublishedFile.relative_path
@@ -58,12 +58,13 @@ class ContentView(View):
 
         Raises:
             ObjectDoesNotExist: The referenced object does not exist.
-            None: When not matched.
 
         """
         base_paths = self._base_paths(path)
         distribution = Distribution.objects.get(base_path__in=base_paths)
         publication = distribution.publication
+        if not publication:
+            raise ObjectDoesNotExist()
         rel_path = path.lstrip(distribution.base_path)
         # artifact
         try:
@@ -75,13 +76,13 @@ class ContentView(View):
             if artifact.file:
                 return artifact.file.name
             else:
-                return None
+                raise ObjectDoesNotExist()
         # metadata
         pm = publication.published_metadata.get(relative_path=rel_path)
         if pm.file:
             return pm.file.name
         else:
-            return None
+            raise ObjectDoesNotExist()
 
     @staticmethod
     def _stream(storage_path):
