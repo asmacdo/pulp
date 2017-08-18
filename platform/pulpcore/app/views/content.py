@@ -1,5 +1,8 @@
 import os
 
+from gettext import gettext as _
+from logging import getLogger, DEBUG
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseNotFound, StreamingHttpResponse
 from django.views.generic import View
@@ -7,6 +10,10 @@ from django.views.generic import View
 from wsgiref.util import FileWrapper
 
 from pulpcore.app.models import Distribution
+
+
+log = getLogger(__name__)
+log.level = DEBUG
 
 
 class ContentView(View):
@@ -46,6 +53,31 @@ class ContentView(View):
             path = base
         return tree
 
+    def _match_distribution(self, path):
+        """
+        Match a distribution using a list of base paths.
+
+        Args:
+            path (str): The path component of the URL.
+
+        Returns:
+            Distribution: The matched distribution.
+
+        Raises:
+            ObjectDoesNotExist: when not matched.
+        """
+        base_paths = self._base_paths(path)
+        try:
+            return Distribution.objects.get(base_path__in=base_paths)
+        except ObjectDoesNotExist:
+            log.debug(
+                'Distribution not matched for %(path)s using: %(base_paths)s',
+                {
+                    'path': path,
+                    'base_paths': base_paths
+                })
+            raise
+
     def _match(self, path):
         """
         Match either a PublishedArtifact or PublishedMetadata.
@@ -60,8 +92,7 @@ class ContentView(View):
             ObjectDoesNotExist: The referenced object does not exist.
 
         """
-        base_paths = self._base_paths(path)
-        distribution = Distribution.objects.get(base_path__in=base_paths)
+        distribution = self._match_distribution(path)
         publication = distribution.publication
         if not publication:
             raise ObjectDoesNotExist()
