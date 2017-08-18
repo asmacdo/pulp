@@ -39,10 +39,10 @@ class ContentView(View):
         """
         tree = []
         while True:
-            base, _ = os.path.split(path)
+            base, _ = os.path.split(path.strip('/'))
             if not base:
                 break
-            tree.append(base.lstrip('/'))
+            tree.append(base)
             path = base
         return tree
 
@@ -65,7 +65,9 @@ class ContentView(View):
         publication = distribution.publication
         if not publication:
             raise ObjectDoesNotExist()
-        rel_path = path.lstrip(distribution.base_path)
+        rel_path = path.lstrip('/')
+        rel_path = rel_path[len(distribution.base_path):]
+        rel_path = rel_path.lstrip('/')
         # artifact
         try:
             pa = publication.published_artifact.get(relative_path=rel_path)
@@ -145,7 +147,8 @@ class ContentView(View):
 
         """
         try:
-            storage_path = self._match(request.path.lstrip(self.BASE_URL))
+            path = request.path[len(self.BASE_URL):]
+            storage_path = self._match(path)
         except ObjectDoesNotExist:
             return HttpResponseNotFound()
 
