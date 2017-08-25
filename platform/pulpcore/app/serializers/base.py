@@ -61,13 +61,12 @@ def view_name_for_model(model_obj, view_action):
         LookupError: if no ViewSet is found for the Model
     """
     # Import this here to prevent out-of-order plugin discovery
-    from pulpcore.app.urls import root_router, nested_routers
+    from pulpcore.app.urls import all_routers
 
     viewset = viewset_for_model(model_obj)
 
     # return the complete view name, joining the registered viewset base name with
     # the requested view method.
-    all_routers = nested_routers + (root_router,)
     for router in all_routers:
         for pattern, registered_viewset, base_name in router.registry:
             if registered_viewset is viewset:
@@ -142,6 +141,39 @@ class ModelSerializer(serializers.HyperlinkedModelSerializer):
         for field_name, mapping in field_mappings.items():
             field = getattr(instance, field_name)
             field.mapping.replace(mapping)
+
+class NestedModelSerializer(ModelSerializer):
+    """
+    This class allows a serializer to determine the value for a nested parent object from the url
+    of a request.
+
+    These serializers must be used by a NestedNamedModelViewSet, which implements the required `get_parent_field_and_object` function.
+
+    Example:
+
+    class NumberSerializer(NestedModelSerializer):
+        letter = foreignkeyfield()
+
+    POST letters/a/numbers number=one Creates a number object, one, which will have an attribute one.letter == 'a'
+    """
+
+    def to_internal_value(self, *args, **kwargs):
+        # super().to_internal_value will validate all writable fields and populate serializer.data
+        validated_data = super().to_internal_value(*args, **kwargs)
+        # nested parent fields should be read_only (so they don't accept args that are ignored)
+        # instead, validate the parent based on the parent url and add it to the validated data.
+        validated_data.update(self.writable_nested_parent_url_to_internal())
+        return validated_data
+
+    def writable_nested_parent_url_to_internal(self):
+        url_parents = OrderedDict()
+        for field in self.fields.values():
+            # Writable nested parent objects must be read only (the parent is determined by the url kwargs)
+            if (getattr(field, 'href_writable', False)):
+                # Use the original viewset to retrieve or 404 the parent object implied by the request url
+                parent_field, parent_obj = self.context['view'].get_parent_field_and_object()
+                url_parents[parent_field] = parent_obj
+        return url_parents
 
 
 class MasterModelSerializer(ModelSerializer):
@@ -288,7 +320,31 @@ class DetailNestedHyperlinkedRelatedField(_DetailFieldMixin, NestedHyperlinkedRe
     """
     For use with nested viewsets of master/detail models
     """
+    # TODO(asmacdo) is this still necessary?
     pass
+
+
+class WritableNestedUrlRelatedField(DetailNestedHyperlinkedRelatedField):
+    """
+    This field is determined by the requst url and the parent object found by using the url kwargs
+    and the parent lookup_kwargs.
+
+    It is writable, but does not accept request parameters.
+    """
+    def __init__(self, *args, **kwargs):
+        kwargs['read_only'] = True
+        self.href_writable = True
+        super().__init__(*args, **kwargs)
+
+    # Is this necessary? Why?
+    def get_object(self, view_name, view_args, view_kwargs):
+        qs = self.get_queryset()
+        if self.parent_lookup_kwargs:
+            filters = {}
+            for key, lookup in self.parent_lookup_kwargs.items():
+                filters[lookup] = view_kwargs.pop(key)
+            qs = qs.filter(**filters)
+        return qs.get(**view_kwargs).cast()
 
 
 class DetailNestedHyperlinkedIdentityField(_DetailFieldMixin, NestedHyperlinkedIdentityField):

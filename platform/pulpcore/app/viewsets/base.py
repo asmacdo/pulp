@@ -2,6 +2,8 @@ import warnings
 
 from pulpcore.app.models import MasterModel
 from rest_framework import viewsets, mixins
+from rest_framework.generics import get_object_or_404
+from rest_framework_nested import routers
 
 
 class GenericNamedModelViewSet(viewsets.GenericViewSet):
@@ -26,6 +28,7 @@ class GenericNamedModelViewSet(viewsets.GenericViewSet):
     """
     endpoint_name = None
     nest_prefix = None
+    parent_viewset = None
     parent_lookup_kwargs = {}
 
     @classmethod
@@ -42,44 +45,72 @@ class GenericNamedModelViewSet(viewsets.GenericViewSet):
 
         return False
 
+    # @classmethod
+    # def register_with(cls, router):
+    #     """
+    #     Register this viewset with the API router using derived names and URL paths.
+    #
+    #     When called, "normal" models will be registered with the API router using
+    #     the defined endpoint_name as that view's URL pattern, and also as the base
+    #     name for all views defined by this ViewSet (e.g. <endpoint_name>-list,
+    #     <endpoint_name>-detail, etc...)
+    #
+    #     Master/Detail models are also handled by this method. Detail ViewSets must
+    #     subclass Master ViewSets, and both endpoints must have endpoint_name set.
+    #     The URL pattern created for detail ViewSets will be a combination of the two
+    #     endpoint_names::
+    #
+    #         <master_viewset.endpoint_name>/<detail_viewset.endpoint_name>
+    #
+    #     The base name for views generated will be similarly constructed::
+    #
+    #         <master_viewset.endpoint_name>-<detail_viewset.endpoint_name>
+    #
+    #     """
+        # this hsould be a property of a viewset
+        # also a vs property
     @classmethod
-    def register_with(cls, router):
-        """
-        Register this viewset with the API router using derived names and URL paths.
+    def view_name(cls):
+        return '-'.join(cls.endpoint_pieces())
+        #
+        # router.register(urlpattern, cls, view_name)
+        # # import ipdb; ipdb.set_trace()
+        # # This needs to be moved to urls.py
+        #     return new_router
+        # else:
+        #     return
 
-        When called, "normal" models will be registered with the API router using
-        the defined endpoint_name as that view's URL pattern, and also as the base
-        name for all views defined by this ViewSet (e.g. <endpoint_name>-list,
-        <endpoint_name>-detail, etc...)
+    @classmethod
+    def urlpattern(cls):
+        return '/'.join(cls.endpoint_pieces())
 
-        Master/Detail models are also handled by this method. Detail ViewSets must
-        subclass Master ViewSets, and both endpoints must have endpoint_name set.
-        The URL pattern created for detail ViewSets will be a combination of the two
-        endpoint_names::
 
-            <master_viewset.endpoint_name>/<detail_viewset.endpoint_name>
-
-        The base name for views generated will be similarly constructed::
-
-            <master_viewset.endpoint_name>-<detail_viewset.endpoint_name>
-
-        """
+    # make this _get_endpoind_pieces
+    @classmethod
+    def endpoint_pieces(cls):
+        #TODO(asmacdo) probably a lot of this can be left out of this method. Where does it belong???
+        # start ***************************************************************************************
         # if we have a master model, include its endpoint name in endpoint pieces
         # by looking at its ancestry and finding the "master" endpoint name
         if cls.queryset is None:
             # If this viewset has no queryset, we can't begin to introspect its
             # endpoint. It is most likely a superclass to be used by Detail
             # Model ViewSet subclasses.
-            return
+            return []
 
         if cls.is_master_viewset():
             # If this is a master viewset, it doesn't need to be registered with the API
             # router (its detail subclasses will be registered instead).
-            return
+            return []
 
-        if cls.queryset.model._meta.master_model is not None:
+
+        # end ***************************************************************************************
+        if cls.queryset.model._meta.master_model is None:
             # Model is a Detail model. Go through its ancestry (via MRO) to find its
             # eldest superclass with a declared name, representing the Master ViewSet
+            return (cls.endpoint_name,)
+
+        else:
 
             master_endpoint_name = None
             # first item in method resolution is the viewset we're starting with,
@@ -103,14 +134,9 @@ class GenericNamedModelViewSet(viewsets.GenericViewSet):
                        'correctly subclass the Master ViewSet, and do both have endpoint_name '
                        'set to different values?').format(cls.__name__)
                 warnings.warn(msg, RuntimeWarning)
-                return
-        else:
-            # "Normal" model, can just use endpoint_name directly.
-            pieces = (cls.endpoint_name,)
+                return []
+            return pieces
 
-        urlpattern = '/'.join(pieces)
-        view_name = '-'.join(pieces)
-        router.register(urlpattern, cls, view_name)
 
     def get_queryset(self):
         """
@@ -132,6 +158,16 @@ class GenericNamedModelViewSet(viewsets.GenericViewSet):
             qs = qs.filter(**filters)
         return qs
 
+    @classmethod
+    def _get_nest_depth(cls):
+        # TODO(asmacdo) Assuming self.parent_lookup_kwargs exists.
+        if not cls.parent_lookup_kwargs:
+            return 1
+        else:
+            return max([len(v.split("__")) for k, v in cls.parent_lookup_kwargs.items()])
+
+
+
 
 class NamedModelViewSet(mixins.CreateModelMixin,
                         mixins.RetrieveModelMixin,
@@ -144,6 +180,35 @@ class NamedModelViewSet(mixins.CreateModelMixin,
     `destroy()` and `list()` actions.
     """
     pass
+
+class NestedNamedModelViewSet(NamedModelViewSet):
+    """
+    A Nested Viewset that can determine parent objects from the url and write them.
+    """
+    # TODO(asmacdo) can these be NotImplementedError() or something?
+    parent_viewset = None
+    # TODO(asmacdo) this was set to {} default in Generic)
+    # parent_lookup_kwargs = None
+
+    def get_parent_field_and_object(self):
+        """
+        Assumes that attr `parent_viewset` has been set and that it is one level up in the url.
+
+        TODO(asmacdo) document extra fields and fail if they arent there!
+        Raises:
+            404 TODO(asmacdo)
+        """
+        parent_field = None
+        filters = {}
+        if self.parent_lookup_kwargs:
+            # Use the parent_lookup_kwargs and the url kwargs (self.kwargs) to retrieve the object
+            for key, lookup in self.parent_lookup_kwargs.items():
+                # TODO(asmacdo) lsplit
+                split_lookup = lookup.split('__')
+                parent_field = split_lookup[0]
+                parent_lookup = '__'.join(split_lookup[1:])
+                filters[parent_lookup] = self.kwargs[key]
+        return parent_field, get_object_or_404(self.parent_viewset.queryset, **filters)
 
 
 class CreateDestroyReadNamedModelViewSet(mixins.CreateModelMixin,
