@@ -100,3 +100,5 @@ class Distribution(Model):
 
     class Meta:
         unique_together = ('publisher', 'name')
+        # TODO(asmacdo) is this necessary?
+        default_related_name = 'distributions'
