@@ -45,73 +45,23 @@ class GenericNamedModelViewSet(viewsets.GenericViewSet):
 
         return False
 
-    # @classmethod
-    # def register_with(cls, router):
-    #     """
-    #     Register this viewset with the API router using derived names and URL paths.
-    #
-    #     When called, "normal" models will be registered with the API router using
-    #     the defined endpoint_name as that view's URL pattern, and also as the base
-    #     name for all views defined by this ViewSet (e.g. <endpoint_name>-list,
-    #     <endpoint_name>-detail, etc...)
-    #
-    #     Master/Detail models are also handled by this method. Detail ViewSets must
-    #     subclass Master ViewSets, and both endpoints must have endpoint_name set.
-    #     The URL pattern created for detail ViewSets will be a combination of the two
-    #     endpoint_names::
-    #
-    #         <master_viewset.endpoint_name>/<detail_viewset.endpoint_name>
-    #
-    #     The base name for views generated will be similarly constructed::
-    #
-    #         <master_viewset.endpoint_name>-<detail_viewset.endpoint_name>
-    #
-    #     """
-        # this hsould be a property of a viewset
-        # also a vs property
     @classmethod
     def view_name(cls):
         return '-'.join(cls.endpoint_pieces())
-        #
-        # router.register(urlpattern, cls, view_name)
-        # # import ipdb; ipdb.set_trace()
-        # # This needs to be moved to urls.py
-        #     return new_router
-        # else:
-        #     return
 
     @classmethod
     def urlpattern(cls):
         return '/'.join(cls.endpoint_pieces())
 
 
-    # make this _get_endpoind_pieces
     @classmethod
     def endpoint_pieces(cls):
-        #TODO(asmacdo) probably a lot of this can be left out of this method. Where does it belong???
-        # start ***************************************************************************************
-        # if we have a master model, include its endpoint name in endpoint pieces
-        # by looking at its ancestry and finding the "master" endpoint name
-        if cls.queryset is None:
-            # If this viewset has no queryset, we can't begin to introspect its
-            # endpoint. It is most likely a superclass to be used by Detail
-            # Model ViewSet subclasses.
-            return []
-
-        if cls.is_master_viewset():
-            # If this is a master viewset, it doesn't need to be registered with the API
-            # router (its detail subclasses will be registered instead).
-            return []
-
-
-        # end ***************************************************************************************
+        # This is a core ViewSet, not Master/Detail. We can use the endpoint as is.
         if cls.queryset.model._meta.master_model is None:
+            return (cls.endpoint_name,)
+        else:
             # Model is a Detail model. Go through its ancestry (via MRO) to find its
             # eldest superclass with a declared name, representing the Master ViewSet
-            return (cls.endpoint_name,)
-
-        else:
-
             master_endpoint_name = None
             # first item in method resolution is the viewset we're starting with,
             # so start finding parents at the second item, index 1.
