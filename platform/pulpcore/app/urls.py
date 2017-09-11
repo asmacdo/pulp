@@ -1,25 +1,20 @@
 """pulp URL Configuration"""
-
-import collections
-import re
-import warnings
-
-from django.core.exceptions import AppRegistryNotReady
 from django.conf.urls import url, include
 from rest_framework_nested import routers
 
 from pulpcore.app.apps import pulp_plugin_configs
 from pulpcore.app.views import ContentView, StatusView
+
 import logging
 log = logging.getLogger(__name__)
+
 
 class VSNode(object):
     """
     This is a tree that can register nested ViewSets with DRF routers.
     """
     def __init__(self, viewset=None):
-        # None self.vs indicates root node
-        self.vs = viewset or None
+        self.vs = viewset
         self.children = []
 
     def add_node(self, node):
@@ -27,9 +22,9 @@ class VSNode(object):
         Add a VSNode to the tree.
 
         Some nodes must be added more than once. In the case of a Master/Detail parent,
-        (example Distributions) the ViewSet's parent_viewset is a master viewset. Each of the detail viewsets belonging
-        will have its own router, and the Distribution viewset must be registered with each of them.
-        to that master should be attached to all of the Detail nodes
+        (example Distributions) the ViewSet's parent_viewset is a master viewset. Each of the detail
+        viewsets belonging will have its own router, and the Distribution viewset must be registered
+        with each of them.
         """
         # Master viewsets cannot be registered
         if node.vs.is_master_viewset():
@@ -46,15 +41,17 @@ class VSNode(object):
 
     def register_with(self, router, all_routers=None):
         """
-        Register this tree with the specified router. Returns a list of all rounters that are created.
+        Register this tree with the specified router. Returns a list of all rounters that are
+        created.
         """
         if all_routers is None:
-            all_routers=[router]
+            all_routers = [router]
         # Root node does not need to be registered, and it doesn't need a router either.
         if self.vs:
             router.register(self.vs.urlpattern(), self.vs, self.vs.view_name())
             if self.children:
-                router = routers.NestedDefaultRouter(router, self.vs.urlpattern(), lookup=self.vs.router_lookup)
+                router = routers.NestedDefaultRouter(router, self.vs.urlpattern(),
+                                                     lookup=self.vs.router_lookup)
                 all_routers.append(router)
         # If we created a new router for the parent, register the children with it
         for child in self.children:

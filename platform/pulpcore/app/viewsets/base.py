@@ -3,7 +3,6 @@ import warnings
 from pulpcore.app.models import MasterModel
 from rest_framework import viewsets, mixins
 from rest_framework.generics import get_object_or_404
-from rest_framework_nested import routers
 
 
 class GenericNamedModelViewSet(viewsets.GenericViewSet):
@@ -53,7 +52,6 @@ class GenericNamedModelViewSet(viewsets.GenericViewSet):
     def urlpattern(cls):
         return '/'.join(cls.endpoint_pieces())
 
-
     @classmethod
     def endpoint_pieces(cls):
         # This is a core ViewSet, not Master/Detail. We can use the endpoint as is.
@@ -87,7 +85,6 @@ class GenericNamedModelViewSet(viewsets.GenericViewSet):
                 return []
             return pieces
 
-
     def get_queryset(self):
         """
         Gets a QuerySet based on the current request.
@@ -110,13 +107,10 @@ class GenericNamedModelViewSet(viewsets.GenericViewSet):
 
     @classmethod
     def _get_nest_depth(cls):
-        # TODO(asmacdo) Assuming self.parent_lookup_kwargs exists.
         if not cls.parent_lookup_kwargs:
             return 1
         else:
             return max([len(v.split("__")) for k, v in cls.parent_lookup_kwargs.items()])
-
-
 
 
 class NamedModelViewSet(mixins.CreateModelMixin,
@@ -131,14 +125,11 @@ class NamedModelViewSet(mixins.CreateModelMixin,
     """
     pass
 
+
 class NestedNamedModelViewSet(NamedModelViewSet):
     """
     A Nested Viewset that can determine parent objects from the url and write them.
     """
-    # TODO(asmacdo) can these be NotImplementedError() or something?
-    parent_viewset = None
-    # TODO(asmacdo) this was set to {} default in Generic)
-    # parent_lookup_kwargs = None
 
     def get_parent_field_and_object(self):
         """
@@ -153,10 +144,7 @@ class NestedNamedModelViewSet(NamedModelViewSet):
         if self.parent_lookup_kwargs:
             # Use the parent_lookup_kwargs and the url kwargs (self.kwargs) to retrieve the object
             for key, lookup in self.parent_lookup_kwargs.items():
-                # TODO(asmacdo) lsplit
-                split_lookup = lookup.split('__')
-                parent_field = split_lookup[0]
-                parent_lookup = '__'.join(split_lookup[1:])
+                parent_field, unused, parent_lookup = lookup.partition('__')
                 filters[parent_lookup] = self.kwargs[key]
         return parent_field, get_object_or_404(self.parent_viewset.queryset, **filters)
 

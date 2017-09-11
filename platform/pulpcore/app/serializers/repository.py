@@ -1,25 +1,21 @@
-from collections import OrderedDict
 from gettext import gettext as _
 
 from rest_framework import serializers
-from rest_framework.fields import empty, set_value
 from rest_framework_nested.serializers import NestedHyperlinkedModelSerializer
 
 from pulpcore.app import models
 from pulpcore.app.serializers import (MasterModelSerializer, ModelSerializer,
                                       RepositoryRelatedField, GenericKeyValueRelatedField,
-                                      ContentRelatedField, FileField,
                                       NestedModelSerializer,
-                                      RepositoryRelatedField,
                                       WritableNestedUrlRelatedField,
                                       ContentRelatedField,
                                       FileField,
-                                      DetailRelatedField,
                                       DetailNestedHyperlinkedRelatedField,
                                       DetailNestedHyperlinkedIdentityField)
 
 from rest_framework_nested.relations import NestedHyperlinkedRelatedField,\
     NestedHyperlinkedIdentityField
+
 
 class RepositorySerializer(ModelSerializer):
     # _href is normally provided by the base class, but Repository's
@@ -179,12 +175,15 @@ class PublisherSerializer(MasterModelSerializer, NestedHyperlinkedModelSerialize
         help_text=_('Timestamp of the most recent successful publish.'),
         read_only=True
     )
-    distributions = NestedHyperlinkedRelatedField(many=True, read_only=True,
-                                                  parent_lookup_kwargs={'publisher_name': 'publisher__name',
-                                                                        'repository_name': 'publisher__repository__name'},
-                                                  view_name = 'distributions-detail',
-                                                  lookup_field='name')
- 
+    distributions = NestedHyperlinkedRelatedField(
+        many=True,
+        read_only=True,
+        parent_lookup_kwargs={'publisher_name': 'publisher__name',
+                              'repository_name': 'publisher__repository__name'},
+        view_name='distributions-detail',
+        lookup_field='name'
+    )
+
     class Meta:
         abstract = True
         model = models.Publisher
@@ -195,30 +194,27 @@ class PublisherSerializer(MasterModelSerializer, NestedHyperlinkedModelSerialize
 
 class DistributionSerializer(NestedModelSerializer):
     # name (models.CharField): The name of the distribution.
-    _href = NestedHyperlinkedIdentityField( lookup_field='name',
-        parent_lookup_kwargs={'repository_name': 'publisher__repository__name', 'publisher_name': 'publisher__name'},
+    _href = NestedHyperlinkedIdentityField(
+        lookup_field='name',
+        parent_lookup_kwargs={'repository_name': 'publisher__repository__name',
+                              'publisher_name': 'publisher__name'},
         view_name='distributions-detail'
     )
-    # Examples: "rawhide" and "stable".
-    # _href = serializers.HyperlinkedIdentityField(
-    #     view_name='distributions-detail',
-    #     lookup_field='name',
-    # )
     name = serializers.CharField(
-        help_text = _('The name of the distribution. Ex, `rawhide` and `stable`.'),
+        help_text=_('The name of the distribution. Ex, `rawhide` and `stable`.'),
     )
     base_path = serializers.CharField(
-        help_text = _('The base (relative) path component of the published url.'),
+        help_text=('The base (relative) path component of the published url.'),
     )
     auto_updated = serializers.BooleanField(
-        help_text = _('The publication is updated automatically when the publisher has created a '
-                      'new publication'),
+        help_text=_('The publication is updated automatically when the publisher has created a '
+                    'new publication'),
     )
     http = serializers.BooleanField(
-        help_text = _('The publication is distributed using HTTP.'),
+        help_text=('The publication is distributed using HTTP.'),
     )
     https = serializers.BooleanField(
-        help_text = _('The publication is distributed using HTTPS.')
+        help_text=_('The publication is distributed using HTTPS.')
     )
     publisher = WritableNestedUrlRelatedField(
         parent_lookup_kwargs={'repository_name': 'repository__name'},
@@ -228,7 +224,7 @@ class DistributionSerializer(NestedModelSerializer):
     class Meta:
         model = models.Distribution
         fields = ModelSerializer.Meta.fields + (
-            'name', 'base_path', 'auto_updated', 'http', 'https',  'publisher',
+            'name', 'base_path', 'auto_updated', 'http', 'https', 'publisher',
         )
 
 

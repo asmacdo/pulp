@@ -142,19 +142,22 @@ class ModelSerializer(serializers.HyperlinkedModelSerializer):
             field = getattr(instance, field_name)
             field.mapping.replace(mapping)
 
+
 class NestedModelSerializer(ModelSerializer):
     """
     This class allows a serializer to determine the value for a nested parent object from the url
     of a request.
 
-    These serializers must be used by a NestedNamedModelViewSet, which implements the required `get_parent_field_and_object` function.
+    These serializers must be used by a NestedNamedModelViewSet, which implements the required
+    `get_parent_field_and_object` function.
 
     Example:
 
     class NumberSerializer(NestedModelSerializer):
         letter = foreignkeyfield()
 
-    POST letters/a/numbers number=one Creates a number object, one, which will have an attribute one.letter == 'a'
+    POST letters/a/numbers number=one Creates a number object, one, which will have an attribute
+    one.letter == 'a'
     """
 
     def to_internal_value(self, *args, **kwargs):
@@ -168,9 +171,10 @@ class NestedModelSerializer(ModelSerializer):
     def writable_nested_parent_url_to_internal(self):
         url_parents = OrderedDict()
         for field in self.fields.values():
-            # Writable nested parent objects must be read only (the parent is determined by the url kwargs)
+            # Writable nested parent objects must be read only (parent is regrieved using kwargs)
             if (getattr(field, 'href_writable', False)):
-                # Use the original viewset to retrieve or 404 the parent object implied by the request url
+                # Use the original viewset to retrieve the parent object implied by the request url
+                # TODO(asmacdo) catch the 404
                 parent_field, parent_obj = self.context['view'].get_parent_field_and_object()
                 url_parents[parent_field] = parent_obj
         return url_parents

@@ -1,17 +1,14 @@
-from urllib.parse import urlsplit, urlunsplit
-
 from django_filters.rest_framework import filters, filterset
 from django_filters import CharFilter
 from rest_framework import decorators
-from rest_framework.generics import get_object_or_404
-from rest_framework.reverse import reverse
 
 from pulpcore.app import tasks
 from pulpcore.app.models import Distribution, Importer, Publisher, Repository, RepositoryContent
 from pulpcore.app.pagination import UUIDPagination, NamePagination
 from pulpcore.app.response import OperationPostponedResponse
-from pulpcore.app.serializers import (ContentSerializer, DistributionSerializer, ImporterSerializer, PublisherSerializer,
-                                      RepositorySerializer, RepositoryContentSerializer)
+from pulpcore.app.serializers import (ContentSerializer, DistributionSerializer, ImporterSerializer,
+                                      PublisherSerializer, RepositorySerializer,
+                                      RepositoryContentSerializer)
 from pulpcore.app.viewsets import NamedModelViewSet, NestedNamedModelViewSet
 from pulpcore.app.viewsets.custom_filters import CharInFilter
 from pulpcore.common import tags
@@ -30,7 +27,6 @@ class RepositoryViewSet(NamedModelViewSet):
     queryset = Repository.objects.all()
     serializer_class = RepositorySerializer
     endpoint_name = 'repositories'
-    # TODO add router lookup
     lookup_field = 'name'
     router_lookup = 'repository'
     pagination_class = NamePagination
@@ -166,7 +162,6 @@ class PublisherViewSet(NamedModelViewSet):
     endpoint_name = 'publishers'
     nest_prefix = 'repositories'
     lookup_field = 'name'
-    # TODO(asmacdo) can these go?
     parent_viewset = RepositoryViewSet
     router_lookup = 'publisher'
     parent_lookup_kwargs = {'repository_name': 'repository__name'}
@@ -211,8 +206,6 @@ class DistributionViewSet(NestedNamedModelViewSet):
     queryset = Distribution.objects.all()
     serializer_class = DistributionSerializer
     lookup_field = 'name'
-    # For nesting:
-    # TODO(asmacdo)is nest_prefix redundant? parent_viewset.endpoint_name?
     nest_prefix = 'publishers'
     parent_viewset = PublisherViewSet
     parent_lookup_kwargs = {'publisher_name': 'publisher__name',
