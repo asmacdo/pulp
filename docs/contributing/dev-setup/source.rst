@@ -14,12 +14,12 @@ You will need ``pulp/devel`` and ``pulp/pulp`` at a minimum::
     $ git clone https://github.com/pulp/devel.git
     $ git clone https://github.com/pulp/pulp.git
 
-If you are using ``example-playbook.yml``, that is all you will need. If your playbook includes optional :ref:`ansible-roles`, you may require additional repositories::
+If you are using ``pulp-from-source.yml``, that is all you will need. If your playbook includes optional :ref:`ansible-roles`, you may require additional repositories::
 
     $ git clone https://github.com/PulpQE/pulp-smash.git
     $ git clone https://github.com/pulp/pulpproject.org.git
 
-If the playbook includes the ``plugins`` roles (``example-playbook.yml`` does), plugins cloned into the development directory will also be installed::
+If you want to use the ``plugin`` role, you'll also need to clone the plugin repository.::
 
     $ git clone https://github.com/pulp/pulp_file.git
 
