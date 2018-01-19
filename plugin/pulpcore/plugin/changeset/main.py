@@ -44,7 +44,7 @@ class ChangeSet:
         added (int): The number of content units successfully added.
         removed (int): The number of content units successfully removed.
         failed (int): The number of changes that failed.
-        repo_version (pulpcore.plugin.models.RepositoryVersion): The new version to which
+        repository_version (pulpcore.plugin.models.RepositoryVersion): The new version to which
             content should be added and removed
 
     Examples:
@@ -62,11 +62,11 @@ class ChangeSet:
         >>>
     """
 
-    def __init__(self, importer, repo_version, additions=(), removals=()):
+    def __init__(self, importer, repository_version, additions=(), removals=()):
         """
         Args:
             importer (pulpcore.plugin.models.Importer): An importer.
-            repo_version (pulpcore.plugin.models.RepositoryVersion): The new version to which
+            repository_version (pulpcore.plugin.models.RepositoryVersion): The new version to which
                 content should be added and removed
             additions (SizedIterable): The content to be added to the repository.
             removals (SizedIterable): The content IDs to be removed.
@@ -82,7 +82,7 @@ class ChangeSet:
         self.added = 0
         self.removed = 0
         self.failed = 0
-        self.repo_version = repo_version
+        self.repository_version = repository_version
 
     @property
     def repository(self):
@@ -117,7 +117,7 @@ class ChangeSet:
         Args:
             content (PendingContent): The content to be added.
         """
-        self.repo_version.add_content(content.stored_model)
+        self.repository_version.add_content(content.stored_model)
 
     def _remove_content(self, content):
         """
@@ -131,7 +131,7 @@ class ChangeSet:
             importer=self.importer,
             content_artifact__in=ContentArtifact.objects.filter(content=content))
         q_set.delete()
-        self.repo_version.remove_content(content)
+        self.repository_version.remove_content(content)
 
     def _apply_additions(self):
         """
