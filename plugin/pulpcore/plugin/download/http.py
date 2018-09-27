@@ -156,7 +156,7 @@ class HttpDownloader(BaseDownloader):
                               url=self.url)
 
     @backoff.on_exception(backoff.expo, aiohttp.ClientResponseError, max_tries=10, giveup=giveup)
-    async def run(self):
+    async def run(self, **kwargs):
         """
         Download, validate, and compute digests on the `url`. This is a coroutine.
 
@@ -166,10 +166,13 @@ class HttpDownloader(BaseDownloader):
         This method provides the same return object type and documented in
         :meth:`~pulpcore.plugin.download.BaseDownloader.run`.
         """
-        async with self.session.get(self.url) as response:
-            response.raise_for_status()
+        async with self.session.get(self.url, **kwargs) as response:
+            self.handle_http_status(response)
             to_return = await self._handle_response(response)
             await response.release()
         if self._close_session_on_finalize:
             self.session.close()
         return to_return
+
+    def handle_http_status(self, response):
+        response.raise_for_status()
