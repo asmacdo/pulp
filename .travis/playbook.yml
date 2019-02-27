@@ -1,0 +1,18 @@
+---
+- hosts: all
+  vars:
+    pulp_default_admin_password: password
+    pulp_secret_key: secret
+    pulp_source_dir: '/var/lib/pulp/devel/pulp'
+    pulp_plugin_source_dir: "/var/lib/pulp/devel/pulpcore-plugin"
+    pulp_install_plugins:
+      pulp-file:
+        app_label: "file"
+        source_dir: "/var/lib/pulp/devel/pulp_file"
+    ansible_python_interpreter: /usr/bin/python3
+  roles:
+    - pulp3-postgresql
+    - pulp3-workers
+    - pulp3-resource-manager
+    - pulp3-webserver
+    - pulp3-content

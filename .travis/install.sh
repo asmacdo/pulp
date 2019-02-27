@@ -1,9 +1,17 @@
 #!/usr/bin/env sh
 set -v
 
+git clone https://github.com/pulp/ansible-pulp3.git
 git clone https://github.com/pulp/pulp.git
 git clone https://github.com/pulp/pulpcore-plugin.git
 git clone https://github.com/pulp/pulp_file.git
+
+
+cp .travis/playbook.yml ansible-pulp3/playbook.yml
+
+cd ansible-pulp3
+ansible-playbook --version
+# ansible-playbook --connection=local --inventory 127.0.0.1, playbook.yml
 
 # # dev_requirements should not be needed for testing; don't install them to make sure
 # pip install "Django<=$DJANGO_MAX"
